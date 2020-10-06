@@ -1,5 +1,4 @@
 defmodule Jira.API do
-
   defp config_or_env(key, env_var) do
     Application.get_env(:jira, key, System.get_env(env_var))
   end
@@ -14,6 +13,10 @@ defmodule Jira.API do
 
   defp password do
     config_or_env(:password, "JIRA_PASSWORD")
+  end
+
+  defp token do
+    config_or_env(:token, "JIRA_API_TOKEN")
   end
 
   ### HTTPoison.Base callbacks
@@ -35,7 +38,7 @@ defmodule Jira.API do
 
   ### Internal Helpers
   def authorization_header do
-    credentials = encoded_credentials(username(), password())
+    credentials = encoded_credentials(username(), token())
     "Basic #{credentials}"
   end
 
@@ -89,7 +92,8 @@ defmodule Jira.API do
   end
 
   def post!(path, content, extra_headers) do
-    {:ok, response} = Mojito.post(process_url(path), process_request_headers(extra_headers), content)
+    {:ok, response} =
+      Mojito.post(process_url(path), process_request_headers(extra_headers), content)
 
     process_response_body(response.body)
   end
